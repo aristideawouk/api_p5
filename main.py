@@ -50,6 +50,53 @@ app = FastAPI(
     version="0.1",
 )
 
+#transformation sentence
+
+def clean_text(sentence):
+    nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
+    allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV']
+    # parse html content
+    soup = BeautifulSoup(sentence, "html.parser")
+
+
+    # return data by retrieving the tag content
+    text =' '.join(soup.stripped_strings)
+    
+    # Make lower
+    text = text.lower()
+    
+        # Remove line breaks
+    # Note: that this line can be augmented and used over
+    # to replace any characters with nothing or a space
+    text = re.sub(r'\n', '', text)
+    
+        # Remove punctuation
+    text =text.translate(str.maketrans(string.punctuation, ' ' * len(string.punctuation))).replace(' '*4, ' ').replace(' '*3, ' ').replace(' '*2, ' ').strip()
+
+        # Remove stop words
+    text = text.split()
+    
+    text_filtered = [word for word in text if not word in useless_words]
+    text_filtered = [word for word in text_filtered if len(word)!=1]
+
+    # Remove numbers
+    text_filtered = [re.sub(r'\w*\d\w*', '', w) for w in text_filtered]
+    
+    # Lemmatize
+    lem = WordNetLemmatizer()
+    text_stemmed = [lem.lemmatize(y) for y in text_filtered]
+    texts = ' '.join(text_stemmed)
+    
+        #clean_verb_noun
+    if len(texts)==0:
+        return texts
+    else :
+        data_words = list(elt for elt in text_stemmed)
+        texts_out = []
+        doc = nlp(" ".join(word for word in data_words)) 
+        texts_out.append(" ".join([token.lemma_ if token.lemma_ not in ['-PRON-'] else '' for token in doc if token.pos_ in allowed_postags]))
+    
+    return texts_out
 
 
 
