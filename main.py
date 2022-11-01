@@ -99,5 +99,15 @@ def clean_text(sentence):
     return texts_out
 
 
+#loading counter vectorizer
+
+count_vect = joblib.load(count_vect.pkl)
 
 
+#loading multibinarizer
+
+MultiLabelBinarizer_mlb = joblib.load(MultiLabelBinarizer_mlb.pkl)
+
+#loading multibinarizer
+
+classifier2 = joblib.load(classifier2.pkl)
