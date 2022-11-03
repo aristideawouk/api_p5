@@ -30,7 +30,7 @@ app = FastAPI(
     version="0.1",
 )
 #define object
-class SENTENCE_TAGS(BaseModel):
+class TEST(BaseModel):
     predict_tag: str
 
 
@@ -40,10 +40,10 @@ count_vect = joblib.load('count_vect.pkl')
 #loading multibinarizer
 MultiLabelBinarizer_mlb = joblib.load('MultiLabelBinarizer_mlb.pkl')
 
-#loading classifier
+# #loading classifier
 classifier2 = joblib.load('classifier2_logistic_regression.pkl')
 
-#loading useless words
+# #loading useless words
 useless_words = joblib.load('useless_words.pkl')
 
 
@@ -84,45 +84,44 @@ def clean_text(sentence):
     texts = ' '.join(text_stemmed)
     
         #clean_verb_noun
-    if len(texts)==0:
+    if len(text_stemmed)==0:
         return texts
     else :
         data_words = list(elt for elt in text_stemmed)
         texts_out = []
         doc = nlp(" ".join(word for word in data_words)) 
         texts_out.append(" ".join([token.lemma_ if token.lemma_ not in ['-PRON-'] else '' for token in doc if token.pos_ in allowed_postags]))
-    
+#        texts_out=' '.join(texts_out)
     return texts_out
-
-
 
 @app.get('/')
 def get_root():
     return {'message': 'Welcome to the tag prediction API'}
 
-@app.get('/predict/{sentence}',response_model=SENTENCE_TAGS)
+@app.get('/test/{sentence}',response_model=TEST)
 
 # function for tag prédiction
-async def predict(sentence :str):
+async def test(sentence :str):
     """
     A simple function that receive a sentence and predict tag related to the topic.
     :param sentence:
     :return: prediction, probabilities
     caution: put sentence in doctring 
     """
-    # clean the sentence
+     # clean the sentence
     cleaned_sentence = clean_text(sentence)
 
-    #BOW transform (count vectorizer)
+#     #BOW transform (count vectorizer)
     test_fit_count= count_vect.transform(cleaned_sentence)
 
-    # perform prediction
+#     # perform prediction
     predictions_proba2= classifier2.predict_proba(test_fit_count)
-
-    # predict tag
+    
+#     # predict tag
     df_quest_keywords_proba = pd.DataFrame(predictions_proba2, columns=list(MultiLabelBinarizer_mlb.classes_))
     proba_top_tags_test=[]
     for i, row in df_quest_keywords_proba.iterrows():
         top_tags = row.nlargest(5).index
         proba_top_tags_test.append(" ".join(top_tags))
-    return SENTENCE_TAGS(predict_tag=proba_top_tags_test)
+    proba_top_tags_test=' '.join(proba_top_tags_test)        
+    return TEST(predict_tag=proba_top_tags_test)
