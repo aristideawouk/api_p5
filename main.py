@@ -8,6 +8,7 @@ import string
 
 #NLP
 import nltk
+nltk.download('omw-1.4')
 from nltk.stem import WordNetLemmatizer
 import re
 import spacy
